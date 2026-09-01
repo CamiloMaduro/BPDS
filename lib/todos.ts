@@ -22,7 +22,7 @@ const filePath = path.join(process.cwd(), 'data', 'todos.json');
  */
 
 
-export async function readtodosFile(): Promise<Todo[]> {
+export async function readTodosFile(): Promise<Todo[]> {
     try {
         const data = await fs.readFile(filePath, 'utf-8');
         return JSON.parse(data) as Todo[];

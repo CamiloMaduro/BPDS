@@ -1,69 +1,274 @@
-import Image from "next/image";
+"use client";
+
+import { FormEvent, KeyboardEvent, useState } from "react";
+
+type Todo = {
+  id: string;
+  title: string;
+  completed: boolean;
+};
+
+type Filter = "all" | "pending" | "completed";
+
+const initialTodos: Todo[] = [
+  {
+    id: "1",
+    title: "Completar el diseño de la TODO List",
+    completed: false,
+  },
+  {
+    id: "2",
+    title: "Revisar los requisitos del proyecto",
+    completed: true,
+  },
+];
 
 export default function Home() {
+  const [todos, setTodos] = useState<Todo[]>(initialTodos);
+  const [newTodo, setNewTodo] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+
+  const createTodo = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const title = newTodo.trim();
+
+    if (!title) return;
+
+    setTodos((currentTodos) => [
+      {
+        id: crypto.randomUUID(),
+        title,
+        completed: false,
+      },
+      ...currentTodos,
+    ]);
+
+    setNewTodo("");
+  };
+
+  const toggleTodo = (id: string) => {
+    setTodos((currentTodos) =>
+      currentTodos.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  };
+
+  const deleteTodo = (id: string) => {
+    setTodos((currentTodos) =>
+      currentTodos.filter((todo) => todo.id !== id)
+    );
+  };
+
+  const startEditing = (todo: Todo) => {
+    setEditingId(todo.id);
+    setEditingTitle(todo.title);
+  };
+
+  const saveEdit = () => {
+    if (!editingId) return;
+
+    const title = editingTitle.trim();
+
+    if (title) {
+      setTodos((currentTodos) =>
+        currentTodos.map((todo) =>
+          todo.id === editingId ? { ...todo, title } : todo
+        )
+      );
+    }
+
+    setEditingId(null);
+    setEditingTitle("");
+  };
+
+  const handleEditKeyDown = (
+    event: KeyboardEvent<HTMLInputElement>,
+    originalTitle: string
+  ) => {
+    if (event.key === "Enter") {
+      event.currentTarget.blur();
+    }
+
+    if (event.key === "Escape") {
+      setEditingTitle(originalTitle);
+      setEditingId(null);
+    }
+  };
+
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === "pending") return !todo.completed;
+    if (filter === "completed") return todo.completed;
+    return true;
+  });
+
+  const pendingCount = todos.filter((todo) => !todo.completed).length;
+  const completedCount = todos.length - pendingCount;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="todo-page">
+      <div className="background-shape shape-one" />
+      <div className="background-shape shape-two" />
+
+      <section className="todo-app">
+        <header className="app-header">
+          <div className="header-icon" aria-hidden="true">
+            ✓
+          </div>
+
+          <div>
+            <p className="eyebrow">ORGANIZA TU DÍA</p>
+            <h1>Mis tareas</h1>
+            <p className="subtitle">
+              Mantén tus pendientes claros y alcanza tus objetivos.
+            </p>
+          </div>
+        </header>
+
+        <form className="new-todo-form" onSubmit={createTodo}>
+          <span className="input-plus" aria-hidden="true">
+            +
+          </span>
+
+          <input
+            type="text"
+            value={newTodo}
+            onChange={(event) => setNewTodo(event.target.value)}
+            placeholder="Escribe una tarea y presiona Enter"
+            aria-label="Nueva tarea"
+            autoComplete="off"
+          />
+
+          <span className="enter-hint">Enter ↵</span>
+        </form>
+
+        <div className="toolbar">
+          <div className="filters" aria-label="Filtrar tareas">
+            <button
+              type="button"
+              className={filter === "all" ? "active" : ""}
+              onClick={() => setFilter("all")}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              Todas
+            </button>
+
+            <button
+              type="button"
+              className={filter === "pending" ? "active" : ""}
+              onClick={() => setFilter("pending")}
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              Pendientes
+            </button>
+
+            <button
+              type="button"
+              className={filter === "completed" ? "active" : ""}
+              onClick={() => setFilter("completed")}
+            >
+              Completadas
+            </button>
+          </div>
+
+          <span className="task-count">
+            {pendingCount} {pendingCount === 1 ? "pendiente" : "pendientes"}
+          </span>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="todo-list">
+          {filteredTodos.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon" aria-hidden="true">
+                ✓
+              </div>
+              <h2>No hay tareas aquí</h2>
+              <p>Agrega una tarea nueva o selecciona otro filtro.</p>
+            </div>
+          ) : (
+            filteredTodos.map((todo) => (
+              <article
+                key={todo.id}
+                className={`todo-item ${todo.completed ? "completed" : ""}`}
+              >
+                <button
+                  type="button"
+                  className="check-button"
+                  onClick={() => toggleTodo(todo.id)}
+                  aria-label={
+                    todo.completed
+                      ? `Marcar ${todo.title} como pendiente`
+                      : `Marcar ${todo.title} como completada`
+                  }
+                >
+                  {todo.completed && "✓"}
+                </button>
+
+                <div className="todo-content">
+                  {editingId === todo.id ? (
+                    <input
+                      className="edit-input"
+                      value={editingTitle}
+                      onChange={(event) =>
+                        setEditingTitle(event.target.value)
+                      }
+                      onBlur={saveEdit}
+                      onKeyDown={(event) =>
+                        handleEditKeyDown(event, todo.title)
+                      }
+                      aria-label={`Editar ${todo.title}`}
+                      autoFocus
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      className="todo-title"
+                      onClick={() => startEditing(todo)}
+                      title="Haz clic para editar"
+                    >
+                      {todo.title}
+                    </button>
+                  )}
+
+                  <span className="todo-status">
+                    {todo.completed ? "Completada" : "Pendiente"}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className="delete-button"
+                  onClick={() => deleteTodo(todo.id)}
+                  aria-label={`Eliminar ${todo.title}`}
+                  title="Eliminar tarea"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="19"
+                    height="19"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </article>
+            ))
+          )}
         </div>
-      </main>
-    </div>
+
+        <footer className="app-footer">
+          <span>{todos.length} tareas en total</span>
+          <span>{completedCount} completadas</span>
+        </footer>
+      </section>
+    </main>
   );
 }

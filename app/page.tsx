@@ -1,6 +1,8 @@
 "use client";
 
-import { FormEvent, KeyboardEvent, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useState } from "react";
+import { getTodos } from "./actions/read";
+import { addTodo } from "./actions/create";
 
 type Todo = {
   id: string;
@@ -10,44 +12,37 @@ type Todo = {
 
 type Filter = "all" | "pending" | "completed";
 
-const initialTodos: Todo[] = [
-  {
-    id: "1",
-    title: "Completar el diseño de la TODO List",
-    completed: false,
-  },
-  {
-    id: "2",
-    title: "Revisar los requisitos del proyecto",
-    completed: true,
-  },
-];
+
 
 export default function Home() {
-  const [todos, setTodos] = useState<Todo[]>(initialTodos);
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
-
-  const createTodo = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const title = newTodo.trim();
-
-    if (!title) return;
-
-    setTodos((currentTodos) => [
-      {
-        id: crypto.randomUUID(),
-        title,
-        completed: false,
-      },
-      ...currentTodos,
-    ]);
-
-    setNewTodo("");
+  useEffect(() => {
+  const loadTodos = async () => {
+    const savedTodos = await getTodos();
+    setTodos(savedTodos);
   };
+
+  loadTodos();
+}, []);
+
+  const createTodo = async (event: FormEvent<HTMLFormElement>) => {
+  event.preventDefault();
+
+  const title = newTodo.trim();
+
+  if (!title) return;
+
+  await addTodo(title);
+
+  const updatedTodos = await getTodos();
+  setTodos(updatedTodos);
+
+  setNewTodo("");
+};
 
   const toggleTodo = (id: string) => {
     setTodos((currentTodos) =>

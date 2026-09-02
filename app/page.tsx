@@ -2,7 +2,7 @@
 
 import { FormEvent, KeyboardEvent, useEffect, useState } from "react";
 import { getTodos } from "./actions/read";
-import { addTodo } from "./actions/create";
+import { createTodoAction } from "./actions/create";
 
 type Todo = {
   id: string;
@@ -21,28 +21,28 @@ export default function Home() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   useEffect(() => {
-  const loadTodos = async () => {
-    const savedTodos = await getTodos();
-    setTodos(savedTodos);
-  };
+    const loadTodos = async () => {
+      const savedTodos = await getTodos();
+      setTodos(savedTodos);
+    };
 
-  loadTodos();
-}, []);
+    loadTodos();
+  }, []);
 
   const createTodo = async (event: FormEvent<HTMLFormElement>) => {
-  event.preventDefault();
+    event.preventDefault();
 
-  const title = newTodo.trim();
+    const title = newTodo.trim();
 
-  if (!title) return;
+    if (!title) return;
 
-  await addTodo(title);
+    await createTodoAction(title);
 
-  const updatedTodos = await getTodos();
-  setTodos(updatedTodos);
+    const updatedTodos = await getTodos();
+    setTodos(updatedTodos);
 
-  setNewTodo("");
-};
+    setNewTodo("");
+  };
 
   const toggleTodo = (id: string) => {
     setTodos((currentTodos) =>

@@ -44,4 +44,28 @@ export async function writeTodosFile(todos: Todo[]): Promise<void> {
     }
 }
 
+// Deletes a todo by id and verifies that it was removed
+export async function deleteTodo(id: string): Promise<void> {
+  const todos = await readTodosFile();
 
+  // Validate that the todo exists
+  const todoExists = todos.some((todo) => todo.id === id);
+
+  if (!todoExists) {
+    throw new Error('Todo not found');
+  }
+
+  // Remove the todo with the matching id
+  const updatedTodos = todos.filter((todo) => todo.id !== id);
+
+  await writeTodosFile(updatedTodos);
+
+  // Verify that the todo was actually deleted
+  const remainingTodos = await readTodosFile();
+
+  const stillExists = remainingTodos.some((todo) => todo.id === id);
+
+  if (stillExists) {
+    throw new Error('Todo could not be deleted');
+  }
+}

@@ -7,7 +7,7 @@ export interface Todo {
     id: string;
     title: string;
     completed: boolean;
-    created_at: string;
+    createdAt: string;
 }
 
 
@@ -44,4 +44,39 @@ export async function writeTodosFile(todos: Todo[]): Promise<void> {
     }
 }
 
+// Deletes a todo by id
+export async function deleteTodo(id: string): Promise<void> {
+  const todos = await readTodosFile();
 
+  // Validate that the todo exists
+  const todoExists = todos.some((todo) => todo.id === id);
+
+  if (!todoExists) {
+    throw new Error('Todo not found');
+  }
+
+  // Remove the todo with the matching id
+  const updatedTodos = todos.filter((todo) => todo.id !== id);
+
+  await writeTodosFile(updatedTodos);
+}
+
+export async function createTodo(title: string): Promise<Todo> {
+    if (!title || title.trim() === '' || typeof title !== 'string') {
+        throw new Error('Task title is required and cannot be empty');
+    }
+
+    const todos = await readTodosFile();
+
+    const newTodo: Todo = {
+        id: Date.now().toString(),
+        title,
+        completed: false,
+        createdAt: new Date().toISOString()
+    };
+
+    todos.push(newTodo);
+    await writeTodosFile(todos);
+
+    return newTodo;
+}

@@ -44,7 +44,7 @@ export async function writeTodosFile(todos: Todo[]): Promise<void> {
     }
 }
 
-// Deletes a todo by id and verifies that it was removed
+// Deletes a todo by id
 export async function deleteTodo(id: string): Promise<void> {
   const todos = await readTodosFile();
 
@@ -59,15 +59,8 @@ export async function deleteTodo(id: string): Promise<void> {
   const updatedTodos = todos.filter((todo) => todo.id !== id);
 
   await writeTodosFile(updatedTodos);
+}
 
-  // Verify that the todo was actually deleted
-  const remainingTodos = await readTodosFile();
-
-  const stillExists = remainingTodos.some((todo) => todo.id === id);
-
-  if (stillExists) {
-    throw new Error('Todo could not be deleted');
-  }
 export async function createTodo(title: string): Promise<Todo> {
     if (!title || title.trim() === '' || typeof title !== 'string') {
         throw new Error('Task title is required and cannot be empty');

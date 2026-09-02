@@ -1,6 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { deleteTodo } from '@/lib/todos';
 
 export async function deleteTodoAction(id: string) {
@@ -10,8 +9,6 @@ export async function deleteTodoAction(id: string) {
     }
 
     await deleteTodo(id);
-
-    revalidatePath('/');
 
     return {
       success: true,

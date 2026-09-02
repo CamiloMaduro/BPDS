@@ -1,6 +1,108 @@
-import Image from "next/image";
+"use client";
+
+import { FormEvent, KeyboardEvent, useEffect, useState } from "react";
+import { getTodos } from "./actions/read";
+import { createTodoAction } from "./actions/create";
+
+type Todo = {
+  id: string;
+  title: string;
+  completed: boolean;
+};
+
+type Filter = "all" | "pending" | "completed";
+
+
 
 export default function Home() {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [newTodo, setNewTodo] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  useEffect(() => {
+    const loadTodos = async () => {
+      const savedTodos = await getTodos();
+      setTodos(savedTodos);
+    };
+
+    loadTodos();
+  }, []);
+
+  const createTodo = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const title = newTodo.trim();
+
+    if (!title) return;
+
+    await createTodoAction(title);
+
+    const updatedTodos = await getTodos();
+    setTodos(updatedTodos);
+
+    setNewTodo("");
+  };
+
+  const toggleTodo = (id: string) => {
+    setTodos((currentTodos) =>
+      currentTodos.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  };
+
+  const deleteTodo = (id: string) => {
+    setTodos((currentTodos) =>
+      currentTodos.filter((todo) => todo.id !== id)
+    );
+  };
+
+  const startEditing = (todo: Todo) => {
+    setEditingId(todo.id);
+    setEditingTitle(todo.title);
+  };
+
+  const saveEdit = () => {
+    if (!editingId) return;
+
+    const title = editingTitle.trim();
+
+    if (title) {
+      setTodos((currentTodos) =>
+        currentTodos.map((todo) =>
+          todo.id === editingId ? { ...todo, title } : todo
+        )
+      );
+    }
+
+    setEditingId(null);
+    setEditingTitle("");
+  };
+
+  const handleEditKeyDown = (
+    event: KeyboardEvent<HTMLInputElement>,
+    originalTitle: string
+  ) => {
+    if (event.key === "Enter") {
+      event.currentTarget.blur();
+    }
+
+    if (event.key === "Escape") {
+      setEditingTitle(originalTitle);
+      setEditingId(null);
+    }
+  };
+
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === "pending") return !todo.completed;
+    if (filter === "completed") return todo.completed;
+    return true;
+  });
+
+  const pendingCount = todos.filter((todo) => !todo.completed).length;
+  const completedCount = todos.length - pendingCount;
+
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
       <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">

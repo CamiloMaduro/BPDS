@@ -22,7 +22,7 @@ export async function createTodoAction(title: string): Promise<CreateTodoActionD
 
 
     } catch (error) {
-        console.error('Error in addTodo Server Action', error);
+        console.error('Error in createTodo Server Action', error);
         return {success: false, error: 'An error occurred while creating the todo item'};
     }
 }

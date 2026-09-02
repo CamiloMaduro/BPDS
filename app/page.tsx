@@ -3,6 +3,8 @@
 import { FormEvent, KeyboardEvent, useEffect, useState } from "react";
 import { getTodos } from "./actions/read";
 import { createTodoAction } from "./actions/create";
+import { updateTodo } from "./actions/update";
+import { removeTodo } from "./actions/delete";
 
 type Todo = {
   id: string;
@@ -44,41 +46,44 @@ export default function Home() {
     setNewTodo("");
   };
 
-  const toggleTodo = (id: string) => {
-    setTodos((currentTodos) =>
-      currentTodos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
-  };
+  const toggleTodo = async (id: string) => {
+  const todo = todos.find((todo) => todo.id === id);
 
-  const deleteTodo = (id: string) => {
-    setTodos((currentTodos) =>
-      currentTodos.filter((todo) => todo.id !== id)
-    );
-  };
+  if (!todo) return;
+
+  await updateTodo(id, { completed: !todo.completed });
+
+  const updatedTodos = await getTodos();
+  setTodos(updatedTodos);
+};
+
+  const deleteTodo = async (id: string) => {
+  await removeTodo(id);
+
+  const updatedTodos = await getTodos();
+  setTodos(updatedTodos);
+};
 
   const startEditing = (todo: Todo) => {
     setEditingId(todo.id);
     setEditingTitle(todo.title);
   };
 
-  const saveEdit = () => {
-    if (!editingId) return;
+  const saveEdit = async () => {
+  if (!editingId) return;
 
-    const title = editingTitle.trim();
+  const title = editingTitle.trim();
 
-    if (title) {
-      setTodos((currentTodos) =>
-        currentTodos.map((todo) =>
-          todo.id === editingId ? { ...todo, title } : todo
-        )
-      );
-    }
+  if (title) {
+    await updateTodo(editingId, { title });
 
-    setEditingId(null);
-    setEditingTitle("");
-  };
+    const updatedTodos = await getTodos();
+    setTodos(updatedTodos);
+  }
+
+  setEditingId(null);
+  setEditingTitle("");
+};
 
   const handleEditKeyDown = (
     event: KeyboardEvent<HTMLInputElement>,

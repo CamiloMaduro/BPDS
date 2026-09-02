@@ -1,24 +1,28 @@
-"use server";
+'use server';
 
-import { promises as fs } from "fs";
-import path from "path";
+import { deleteTodo } from '@/lib/todos';
 
-const todosFilePath = path.join(process.cwd(), "data", "todos.json");
+export async function deleteTodoAction(id: string) {
+  try {
+    if (!id) {
+      throw new Error('Todo id is required');
+    }
 
-type Todo = {
-  id: string;
-  title: string;
-  completed: boolean;
-};
+    await deleteTodo(id);
 
-export async function removeTodo(id: string) {
-  const data = await fs.readFile(todosFilePath, "utf-8");
-  const todos: Todo[] = JSON.parse(data);
+    return {
+      success: true,
+      message: 'Todo deleted successfully',
+    };
+  } catch (error) {
+    console.error('Error deleting todo:', error);
 
-  const updatedTodos = todos.filter((todo) => todo.id !== id);
-
-  await fs.writeFile(
-    todosFilePath,
-    JSON.stringify(updatedTodos, null, 2)
-  );
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : 'An unexpected error occurred',
+    };
+  }
 }

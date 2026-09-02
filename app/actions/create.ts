@@ -1,30 +1,28 @@
-"use server";
+'use server';
 
-import { promises as fs } from "fs";
-import path from "path";
-import { randomUUID } from "crypto";
+import { createTodo, Todo } from '@/lib/todos';
 
-const todosFilePath = path.join(process.cwd(), "data", "todos.json");
+export interface CreateTodoActionData {
+    success: boolean;
+    data?: Todo;
+    error?: string;
+}
 
-export async function addTodo(title: string) {
-  let todos = [];
 
-  try {
-    const data = await fs.readFile(todosFilePath, "utf-8");
-    todos = JSON.parse(data);
-  } catch {
-    await fs.mkdir(path.dirname(todosFilePath), { recursive: true });
-  }
+/**
+ * Server Action to handle the creation of a new Todo item
+ */
+export async function createTodoAction(title: string): Promise<CreateTodoActionData> {
+    try {
+        if (!title || title.trim() === '' || typeof title !== 'string') {
+            return { success: false, error: 'Task title is required and cannot be empty' };
+        }
+        const newTodo = await createTodo(title);
+        return { success: true, data: newTodo };
 
-  const newTodo = {
-    id: randomUUID(),
-    title,
-    completed: false,
-  };
 
-  todos = [newTodo, ...todos];
-
-  await fs.writeFile(todosFilePath, JSON.stringify(todos, null, 2));
-
-  return newTodo;
+    } catch (error) {
+        console.error('Error in addTodo Server Action', error);
+        return {success: false, error: 'An error occurred while creating the todo item'};
+    }
 }

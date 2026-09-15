@@ -84,3 +84,29 @@ export async function createTodo(title: string): Promise<Todo> {
 
     return newTodo;
 }
+
+// the json could be broken, so we check it is really an array
+async function readTodosSafe(): Promise<Todo[]> {
+    const todos = await readTodosFile();
+
+    if (!Array.isArray(todos)) {
+        console.error('todos.json is not an array');
+        return [];
+    }
+
+    return todos;
+}
+
+// tasks still in the main list. old tasks without the flag count as active
+export async function getActiveTodos(): Promise<Todo[]> {
+    const todos = await readTodosSafe();
+
+    return todos.filter((todo) => todo.deleted !== true);
+}
+
+// tasks in the trash
+export async function getDeletedTodos(): Promise<Todo[]> {
+    const todos = await readTodosSafe();
+
+    return todos.filter((todo) => todo.deleted === true);
+}

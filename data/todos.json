@@ -3,12 +3,8 @@
     "id": "1",
     "title": "Initial example task",
     "completed": false,
-    "createdAt": "2024-06-01T12:00:00Z"
-  },
-  {
-    "id": "1789432445516",
-    "title": "Hola!",
-    "completed": false,
-    "createdAt": "2026-09-15T00:34:05.516Z"
+    "deleted": false,
+    "createdAt": "2024-06-01T12:00:00Z",
+    "deletedAt": null
   }
 ]

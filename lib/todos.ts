@@ -80,3 +80,15 @@ export async function createTodo(title: string): Promise<Todo> {
 
     return newTodo;
 }
+
+export async function restoreTodo(id: string): Promise<Todo | null> {
+  const todos = await readTodosFile();
+  const todo = todos.find((t) => t.id === id);
+
+  if (!todo) return null;
+
+  (todo as any).deleted = false;
+  await writeTodosFile(todos);
+
+  return todo;
+}

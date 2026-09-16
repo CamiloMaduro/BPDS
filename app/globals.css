@@ -368,6 +368,102 @@ h1 {
   font-size: 12px;
 }
 
+.action-error {
+  margin: -14px 0 18px;
+  color: #c33155;
+  font-size: 13px;
+}
+
+.trash-section {
+  margin-bottom: 18px;
+  border: 1px solid #e6e4ed;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #faf9fc;
+}
+
+.trash-toggle {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border: 0;
+  color: #676371;
+  font-weight: 700;
+  background: transparent;
+}
+
+.trash-toggle:hover {
+  color: var(--purple);
+  background: #f5f3ff;
+}
+
+.trash-list {
+  display: grid;
+  gap: 9px;
+  padding: 0 12px 12px;
+}
+
+.trash-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px;
+  border: 1px dashed #d8d4df;
+  border-radius: 12px;
+  background: white;
+}
+
+.trash-title {
+  display: block;
+  color: #625f6b;
+  font-weight: 600;
+  text-decoration: line-through;
+}
+
+.deleted-badge {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  color: #777180;
+  font-size: 11px;
+  background: #f0edf3;
+}
+
+.restore-button {
+  flex-shrink: 0;
+  padding: 8px 11px;
+  border: 1px solid #c9c5f4;
+  border-radius: 8px;
+  color: #554bd9;
+  font-size: 13px;
+  font-weight: 700;
+  background: #f4f3ff;
+}
+
+.restore-button:hover {
+  background: #e9e7ff;
+}
+
+.trash-empty-state {
+  padding: 16px;
+  color: #77758c;
+  text-align: center;
+}
+
+.trash-empty-state h2,
+.trash-empty-state p {
+  margin: 0;
+}
+
+.trash-empty-state p {
+  margin-top: 5px;
+  font-size: 13px;
+}
+
 @media (max-width: 600px) {
   .todo-page {
     padding: 18px 12px;
@@ -421,5 +517,9 @@ h1 {
 
   .app-footer {
     font-size: 11px;
+  }
+
+  .trash-item {
+    align-items: flex-start;
   }
 }

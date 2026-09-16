@@ -17,6 +17,7 @@ export default function Home() {
   const [filter, setFilter] = useState<Filter>("all");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const [isTrashOpen, setIsTrashOpen] = useState(false);
   useEffect(() => {
     const loadTodos = async () => {
       const savedTodos = await getTodos();
@@ -52,12 +53,26 @@ export default function Home() {
     setTodos(updatedTodos);
   };
 
-  const deleteTodo = async (id: string) => {
-    await removeTodo(id);
+ const deleteTodo = (id: string) => {
+  setTodos((currentTodos) =>
+    currentTodos.map((todo) =>
+      todo.id === id
+        ? { ...todo, deleted: true, deletedAt: new Date().toISOString() }
+        : todo
+    )
+  );
+};
 
-    const updatedTodos = await getTodos();
-    setTodos(updatedTodos);
-  };
+
+    const restoreTodo = (id: string) => {
+  setTodos((currentTodos) =>
+    currentTodos.map((todo) =>
+      todo.id === id
+        ? { ...todo, deleted: false, deletedAt: null }
+        : todo
+    )
+  );
+};
 
   const startEditing = (todo: Todo) => {
     setEditingId(todo.id);
@@ -94,14 +109,26 @@ export default function Home() {
     }
   };
 
-  const filteredTodos = todos.filter((todo) => {
-    if (filter === "pending") return !todo.completed;
-    if (filter === "completed") return todo.completed;
-    return true;
-  });
+  const activeTodos = todos.filter((todo) => !todo.deleted);
+const deletedTodos = todos.filter((todo) => todo.deleted);
 
-  const pendingCount = todos.filter((todo) => !todo.completed).length;
-  const completedCount = todos.length - pendingCount;
+const filteredTodos = activeTodos.filter((todo) => {
+  if (filter === "pending") return !todo.completed;
+  if (filter === "completed") return todo.completed;
+  return true;
+});
+
+const pendingCount = activeTodos.filter((todo) => !todo.completed).length;
+const completedCount = activeTodos.length - pendingCount;
+
+const formatDeletedAt = (deletedAt?: string | null) => {
+  if (!deletedAt) return "Eliminada recientemente";
+
+  return `Eliminada el ${new Intl.DateTimeFormat("es-CO", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(deletedAt))}`;
+};
 
   return (
     <main className="todo-page">
@@ -260,6 +287,49 @@ export default function Home() {
         </div>
 
         <footer className="app-footer">
+          <section className="trash-section" aria-label="Papelera de tareas">
+  <button
+    type="button"
+    className="trash-toggle"
+    onClick={() => setIsTrashOpen((isOpen) => !isOpen)}
+    aria-expanded={isTrashOpen}
+  >
+    <span>Papelera</span>
+    <span className="trash-count">
+      {deletedTodos.length} {deletedTodos.length === 1 ? "tarea" : "tareas"}
+    </span>
+  </button>
+
+  {isTrashOpen && (
+    <div className="trash-list">
+      {deletedTodos.length === 0 ? (
+        <div className="trash-empty-state">
+          <h2>La papelera está vacía</h2>
+          <p>Las tareas eliminadas aparecerán aquí.</p>
+        </div>
+      ) : (
+        deletedTodos.map((todo) => (
+          <article key={todo.id} className="trash-item">
+            <div>
+              <span className="trash-title">{todo.title}</span>
+              <span className="deleted-badge">
+                {formatDeletedAt(todo.deletedAt)}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              className="restore-button"
+              onClick={() => restoreTodo(todo.id)}
+            >
+              Restaurar
+            </button>
+          </article>
+        ))
+      )}
+    </div>
+  )}
+</section>
           <span>{todos.length} tareas en total</span>
           <span>{completedCount} completadas</span>
         </footer>

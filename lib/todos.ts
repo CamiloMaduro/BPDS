@@ -46,7 +46,7 @@ export async function writeTodosFile(todos: Todo[]): Promise<void> {
     }
 }
 
-// Deletes a todo by id
+// Soft deletes a todo by id
 export async function deleteTodo(id: string): Promise<void> {
   const todos = await readTodosFile();
 
@@ -57,8 +57,16 @@ export async function deleteTodo(id: string): Promise<void> {
     throw new Error('Todo not found');
   }
 
-  // Remove the todo with the matching id
-  const updatedTodos = todos.filter((todo) => todo.id !== id);
+  // Mark the todo as deleted instead of removing it
+  const updatedTodos = todos.map((todo) =>
+    todo.id === id
+      ? {
+          ...todo,
+          deleted: true,
+          deletedAt: new Date().toISOString(),
+        }
+      : todo
+  );
 
   await writeTodosFile(updatedTodos);
 }

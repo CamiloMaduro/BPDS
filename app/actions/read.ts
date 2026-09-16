@@ -15,5 +15,7 @@ export async function getTodos(): Promise<Todo[]> {
     }
 
     // b before a puts the newest ones on top
-    return todos.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return todos
+        .filter((todo) => todo.deleted !== true)
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }

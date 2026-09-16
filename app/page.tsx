@@ -5,12 +5,7 @@ import { getTodos } from "./actions/read";
 import { createTodoAction } from "./actions/create";
 import { updateTodo } from "./actions/update";
 import { deleteTodoAction as removeTodo } from "./actions/delete";
-
-type Todo = {
-  id: string;
-  title: string;
-  completed: boolean;
-};
+import { Todo } from "@/lib/todos";
 
 type Filter = "all" | "pending" | "completed";
 

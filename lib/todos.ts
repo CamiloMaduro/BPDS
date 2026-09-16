@@ -7,7 +7,9 @@ export interface Todo {
     id: string;
     title: string;
     completed: boolean;
+    deleted: boolean;
     createdAt: string;
+    deletedAt?: string | null; // Optional property for the deletion timestamp
 }
 
 
@@ -72,6 +74,8 @@ export async function createTodo(title: string): Promise<Todo> {
         id: Date.now().toString(),
         title,
         completed: false,
+        deleted: false,
+        deletedAt: null,
         createdAt: new Date().toISOString()
     };
 

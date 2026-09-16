@@ -1,15 +1,7 @@
 "use server";
 
-import { promises as fs } from "fs";
-import path from "path";
-
-const filePath = path.join(process.cwd(), "data", "todos.json");
-
-type Todo = {
-  id: string;
-  title: string;
-  completed: boolean;
-};
+import { revalidatePath } from "next/cache";
+import { readTodosFile, writeTodosFile } from "@/lib/todos";
 
 type TodoChanges = {
   title?: string;
@@ -18,17 +10,23 @@ type TodoChanges = {
 
 export async function updateTodo(id: string, changes: TodoChanges) {
   try {
-    const fileData = await fs.readFile(filePath, "utf8");
-    const todos: Todo[] = JSON.parse(fileData);
+    if (!id) {
+      return { success: false, error: "Todo id is required" };
+    }
+
+    const todos = await readTodosFile();
+    const todoExists = todos.some((todo) => todo.id === id);
+
+    if (!todoExists) {
+      return { success: false, error: "Todo not found" };
+    }
 
     const updatedTodos = todos.map((todo) =>
       todo.id === id ? { ...todo, ...changes } : todo
     );
 
-    await fs.writeFile(
-      filePath,
-      JSON.stringify(updatedTodos, null, 2)
-    );
+    await writeTodosFile(updatedTodos);
+    revalidatePath("/");
 
     return { success: true };
   } catch (error) {

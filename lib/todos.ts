@@ -72,7 +72,7 @@ export async function deleteTodo(id: string): Promise<void> {
 }
 
 export async function createTodo(title: string): Promise<Todo> {
-    if (!title || title.trim() === '' || typeof title !== 'string') {
+    if (typeof title !== 'string' || title.trim() === '') {
         throw new Error('Task title is required and cannot be empty');
     }
 
@@ -117,4 +117,20 @@ export async function getDeletedTodos(): Promise<Todo[]> {
     const todos = await readTodosSafe();
 
     return todos.filter((todo) => todo.deleted === true);
+}
+
+// Returns a deleted task to the main list.
+export async function restoreTodo(id: string): Promise<Todo | null> {
+    const todos = await readTodosSafe();
+    const todo = todos.find((item) => item.id === id);
+
+    if (!todo) {
+        return null;
+    }
+
+    todo.deleted = false;
+    todo.deletedAt = null;
+    await writeTodosFile(todos);
+
+    return todo;
 }

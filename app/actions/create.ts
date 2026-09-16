@@ -15,7 +15,7 @@ export interface CreateTodoActionData {
  */
 export async function createTodoAction(title: string): Promise<CreateTodoActionData> {
     try {
-        if (!title || title.trim() === '' || typeof title !== 'string') {
+        if (typeof title !== 'string' || title.trim() === '') {
             return { success: false, error: 'Task title is required and cannot be empty' };
         }
 

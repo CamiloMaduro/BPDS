@@ -1,34 +1,48 @@
 "use client";
 
 import { FormEvent, KeyboardEvent, useEffect, useState } from "react";
-import { getTodos } from "./actions/read";
+import { getTodoLists } from "./actions/read";
 import { createTodoAction } from "./actions/create";
 import { updateTodo } from "./actions/update";
 import { deleteTodoAction as removeTodo } from "./actions/delete";
-
-type Todo = {
-  id: string;
-  title: string;
-  completed: boolean;
-};
+import { restoreTodoAction } from "./actions/restore";
+import { Todo } from "@/lib/todos";
 
 type Filter = "all" | "pending" | "completed";
 
+const formatDeletedAt = (deletedAt?: string | null) => {
+  if (!deletedAt) return "Eliminada recientemente";
 
+  return `Eliminada el ${new Intl.DateTimeFormat("es-CO", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(deletedAt))}`;
+};
 
 export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [deletedTodos, setDeletedTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const [isTrashOpen, setIsTrashOpen] = useState(false);
+  const [error, setError] = useState("");
+
+  const refreshTodos = async () => {
+    const { active, deleted } = await getTodoLists();
+    setTodos(active);
+    setDeletedTodos(deleted);
+  };
+
   useEffect(() => {
     const loadTodos = async () => {
-      const savedTodos = await getTodos();
-      setTodos(savedTodos);
+      const { active, deleted } = await getTodoLists();
+      setTodos(active);
+      setDeletedTodos(deleted);
     };
 
-    loadTodos();
+    void loadTodos();
   }, []);
 
   const createTodo = async (event: FormEvent<HTMLFormElement>) => {
@@ -38,12 +52,16 @@ export default function Home() {
 
     if (!title) return;
 
-    await createTodoAction(title);
+    const result = await createTodoAction(title);
 
-    const updatedTodos = await getTodos();
-    setTodos(updatedTodos);
+    if (!result.success) {
+      setError(result.error ?? "No se pudo crear la tarea.");
+      return;
+    }
 
     setNewTodo("");
+    setError("");
+    await refreshTodos();
   };
 
   const toggleTodo = async (id: string) => {
@@ -51,17 +69,39 @@ export default function Home() {
 
     if (!todo) return;
 
-    await updateTodo(id, { completed: !todo.completed });
+    const result = await updateTodo(id, { completed: !todo.completed });
 
-    const updatedTodos = await getTodos();
-    setTodos(updatedTodos);
+    if (!result.success) {
+      setError(result.error ?? "No se pudo actualizar la tarea.");
+      return;
+    }
+
+    setError("");
+    await refreshTodos();
   };
 
   const deleteTodo = async (id: string) => {
-    await removeTodo(id);
+    const result = await removeTodo(id);
 
-    const updatedTodos = await getTodos();
-    setTodos(updatedTodos);
+    if (!result.success) {
+      setError(result.message ?? "No se pudo eliminar la tarea.");
+      return;
+    }
+
+    setError("");
+    await refreshTodos();
+  };
+
+  const restoreTodo = async (id: string) => {
+    const result = await restoreTodoAction(id);
+
+    if (!result.success) {
+      setError(result.error ?? "No se pudo restaurar la tarea.");
+      return;
+    }
+
+    setError("");
+    await refreshTodos();
   };
 
   const startEditing = (todo: Todo) => {
@@ -75,10 +115,14 @@ export default function Home() {
     const title = editingTitle.trim();
 
     if (title) {
-      await updateTodo(editingId, { title });
+      const result = await updateTodo(editingId, { title });
 
-      const updatedTodos = await getTodos();
-      setTodos(updatedTodos);
+      if (!result.success) {
+        setError(result.error ?? "No se pudo actualizar la tarea.");
+      } else {
+        setError("");
+        await refreshTodos();
+      }
     }
 
     setEditingId(null);
@@ -144,6 +188,8 @@ export default function Home() {
 
           <span className="enter-hint">Enter ↵</span>
         </form>
+
+        {error && <p className="action-error" role="alert">{error}</p>}
 
         <div className="toolbar">
           <div className="filters" aria-label="Filtrar tareas">
@@ -263,6 +309,50 @@ export default function Home() {
             ))
           )}
         </div>
+
+        <section className="trash-section" aria-label="Papelera de tareas">
+          <button
+            type="button"
+            className="trash-toggle"
+            onClick={() => setIsTrashOpen((isOpen) => !isOpen)}
+            aria-expanded={isTrashOpen}
+          >
+            <span>Papelera</span>
+            <span className="trash-count">
+              {deletedTodos.length} {deletedTodos.length === 1 ? "tarea" : "tareas"}
+            </span>
+          </button>
+
+          {isTrashOpen && (
+            <div className="trash-list">
+              {deletedTodos.length === 0 ? (
+                <div className="trash-empty-state">
+                  <h2>La papelera está vacía</h2>
+                  <p>Las tareas eliminadas aparecerán aquí.</p>
+                </div>
+              ) : (
+                deletedTodos.map((todo) => (
+                  <article key={todo.id} className="trash-item">
+                    <div>
+                      <span className="trash-title">{todo.title}</span>
+                      <span className="deleted-badge">
+                        {formatDeletedAt(todo.deletedAt)}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="restore-button"
+                      onClick={() => restoreTodo(todo.id)}
+                    >
+                      Restaurar
+                    </button>
+                  </article>
+                ))
+              )}
+            </div>
+          )}
+        </section>
 
         <footer className="app-footer">
           <span>{todos.length} tareas en total</span>

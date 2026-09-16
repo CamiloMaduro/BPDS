@@ -7,7 +7,9 @@ export interface Todo {
     id: string;
     title: string;
     completed: boolean;
+    deleted: boolean;
     createdAt: string;
+    deletedAt?: string | null; // Optional property for the deletion timestamp
 }
 
 
@@ -44,7 +46,7 @@ export async function writeTodosFile(todos: Todo[]): Promise<void> {
     }
 }
 
-// Deletes a todo by id
+// Soft deletes a todo by id
 export async function deleteTodo(id: string): Promise<void> {
   const todos = await readTodosFile();
 
@@ -55,14 +57,22 @@ export async function deleteTodo(id: string): Promise<void> {
     throw new Error('Todo not found');
   }
 
-  // Remove the todo with the matching id
-  const updatedTodos = todos.filter((todo) => todo.id !== id);
+  // Mark the todo as deleted instead of removing it
+  const updatedTodos = todos.map((todo) =>
+    todo.id === id
+      ? {
+          ...todo,
+          deleted: true,
+          deletedAt: new Date().toISOString(),
+        }
+      : todo
+  );
 
   await writeTodosFile(updatedTodos);
 }
 
 export async function createTodo(title: string): Promise<Todo> {
-    if (!title || title.trim() === '' || typeof title !== 'string') {
+    if (typeof title !== 'string' || title.trim() === '') {
         throw new Error('Task title is required and cannot be empty');
     }
 
@@ -72,6 +82,8 @@ export async function createTodo(title: string): Promise<Todo> {
         id: Date.now().toString(),
         title,
         completed: false,
+        deleted: false,
+        deletedAt: null,
         createdAt: new Date().toISOString()
     };
 
@@ -79,4 +91,46 @@ export async function createTodo(title: string): Promise<Todo> {
     await writeTodosFile(todos);
 
     return newTodo;
+}
+
+// the json could be broken, so we check it is really an array
+async function readTodosSafe(): Promise<Todo[]> {
+    const todos = await readTodosFile();
+
+    if (!Array.isArray(todos)) {
+        console.error('todos.json is not an array');
+        return [];
+    }
+
+    return todos;
+}
+
+// tasks still in the main list. old tasks without the flag count as active
+export async function getActiveTodos(): Promise<Todo[]> {
+    const todos = await readTodosSafe();
+
+    return todos.filter((todo) => todo.deleted !== true);
+}
+
+// tasks in the trash
+export async function getDeletedTodos(): Promise<Todo[]> {
+    const todos = await readTodosSafe();
+
+    return todos.filter((todo) => todo.deleted === true);
+}
+
+// Returns a deleted task to the main list.
+export async function restoreTodo(id: string): Promise<Todo | null> {
+    const todos = await readTodosSafe();
+    const todo = todos.find((item) => item.id === id);
+
+    if (!todo) {
+        return null;
+    }
+
+    todo.deleted = false;
+    todo.deletedAt = null;
+    await writeTodosFile(todos);
+
+    return todo;
 }

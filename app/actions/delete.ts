@@ -1,7 +1,4 @@
-'use server';
-
-import { deleteTodo } from '@/lib/todos';
-import { revalidatePath } from 'next/cache';
+import { deleteTodoInStorage } from "@/lib/todos-storage";
 
 export async function deleteTodoAction(id: string) {
   try {
@@ -9,8 +6,7 @@ export async function deleteTodoAction(id: string) {
       throw new Error('Todo id is required');
     }
 
-    await deleteTodo(id);
-    revalidatePath('/');
+    deleteTodoInStorage(id);
 
     return {
       success: true,

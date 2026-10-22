@@ -6,7 +6,7 @@ import { createTodoAction } from "./actions/create";
 import { updateTodo } from "./actions/update";
 import { deleteTodoAction as removeTodo } from "./actions/delete";
 import { restoreTodoAction } from "./actions/restore";
-import { Todo } from "@/lib/todos";
+import type { Todo } from "@/lib/todos";
 
 type Filter = "all" | "pending" | "completed";
 
@@ -30,19 +30,35 @@ export default function Home() {
   const [error, setError] = useState("");
 
   const refreshTodos = async () => {
-    const { active, deleted } = await getTodoLists();
-    setTodos(active);
-    setDeletedTodos(deleted);
-  };
-
-  useEffect(() => {
-    const loadTodos = async () => {
+    try {
       const { active, deleted } = await getTodoLists();
       setTodos(active);
       setDeletedTodos(deleted);
-    };
+      setError("");
+    } catch (error) {
+      console.error("Error al leer las tareas guardadas:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "No se pudieron cargar las tareas guardadas."
+      );
+    }
+  };
 
-    void loadTodos();
+  useEffect(() => {
+    void getTodoLists()
+      .then(({ active, deleted }) => {
+        setTodos(active);
+        setDeletedTodos(deleted);
+      })
+      .catch((error: unknown) => {
+        console.error("Error al leer las tareas guardadas:", error);
+        setError(
+          error instanceof Error
+            ? error.message
+            : "No se pudieron cargar las tareas guardadas."
+        );
+      });
   }, []);
 
   const createTodo = async (event: FormEvent<HTMLFormElement>) => {

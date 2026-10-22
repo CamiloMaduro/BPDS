@@ -1,7 +1,5 @@
-'use server';
-// everything here runs on the server, because readTodosFile uses fs
-
-import { readTodosFile, getDeletedTodos as readDeletedTodos, Todo } from '@/lib/todos';
+import type { Todo } from "@/lib/todos";
+import { getTodoListsFromStorage } from "@/lib/todos-storage";
 
 export interface TodoLists {
     active: Todo[];
@@ -10,32 +8,15 @@ export interface TodoLists {
 
 // Returns the todos in the trash, newest first
 export async function getDeletedTodos(): Promise<Todo[]> {
-    const todos = await readDeletedTodos();
-
-    return todos.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return getTodoListsFromStorage().deleted;
 }
 
 // Returns both lists, so the page can read them in one call
 export async function getTodoLists(): Promise<TodoLists> {
-    const active = await getTodos();
-    const deleted = await getDeletedTodos();
-
-    return { active, deleted };
+    return getTodoListsFromStorage();
 }
 
 // Returns all the todos, newest first
 export async function getTodos(): Promise<Todo[]> {
-    // gets the array from todos.json
-    const todos = await readTodosFile();
-
-    // the json could be broken, so we check it is really an array
-    if (!Array.isArray(todos)) {
-        console.error('todos.json is not an array');
-        return [];
-    }
-
-    // b before a puts the newest ones on top
-    return todos
-        .filter((todo) => todo.deleted !== true)
-        .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return getTodoListsFromStorage().active;
 }

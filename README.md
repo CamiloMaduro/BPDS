@@ -8,6 +8,8 @@ BPDS Todo App permite a los usuarios gestionar tareas de manera sencilla, incluy
 
 El proyecto está desarrollado utilizando **Next.js** y **TypeScript**, siguiendo buenas prácticas de desarrollo y una estructura organizada por responsabilidades.
 
+Las tareas se guardan en `localStorage` en el navegador. No se necesita una base de datos ni almacenamiento en el servidor para desplegar la aplicación. Los datos son propios de cada navegador y origen: no se sincronizan entre usuarios o dispositivos y no se transfieren automáticamente desde el antiguo archivo `data/todos.json`.
+
 ## 🚀 Tecnologías
 
 * **Next.js**
@@ -83,11 +85,10 @@ BPDS/
 │   ├── ...
 │
 ├── lib/
+│   ├── todos-storage.ts
 │   └── todos.ts
 │
 ├── public/
-│
-├── todos.json
 │
 ├── package.json
 ├── package-lock.json
@@ -105,6 +106,8 @@ Actualmente el proyecto contempla las siguientes operaciones:
 * ✅ Eliminar tareas
 * ✅ Marcar tareas como completadas
 * ✅ Ordenar tareas por fecha de creación
+
+Los cambios se conservan en el mismo navegador mientras se utilice el mismo dominio y no se borren los datos del sitio.
 
 ## 📅 Modelo de datos
 

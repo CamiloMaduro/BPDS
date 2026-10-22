@@ -1,7 +1,4 @@
-"use server";
-
-import { revalidatePath } from "next/cache";
-import { readTodosFile, writeTodosFile } from "@/lib/todos";
+import { updateTodoInStorage } from "@/lib/todos-storage";
 
 type TodoChanges = {
   title?: string;
@@ -14,23 +11,17 @@ export async function updateTodo(id: string, changes: TodoChanges) {
       return { success: false, error: "Todo id is required" };
     }
 
-    const todos = await readTodosFile();
-    const todoExists = todos.some((todo) => todo.id === id);
-
-    if (!todoExists) {
-      return { success: false, error: "Todo not found" };
-    }
-
-    const updatedTodos = todos.map((todo) =>
-      todo.id === id ? { ...todo, ...changes } : todo
-    );
-
-    await writeTodosFile(updatedTodos);
-    revalidatePath("/");
+    updateTodoInStorage(id, changes);
 
     return { success: true };
   } catch (error) {
     console.error("Error al actualizar:", error);
-    return { success: false, error: "No se pudo actualizar la tarea" };
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "No se pudo actualizar la tarea",
+    };
   }
 }

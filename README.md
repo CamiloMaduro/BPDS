@@ -1,4 +1,4 @@
-# 🚀 BPDS - Todo App
+# 🚀 BPDS - Todo App CUC
 
 ![Next.js](https://img.shields.io/badge/Next.js-14%2B-black?style=for-the-badge&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)

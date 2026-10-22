@@ -21,7 +21,7 @@ Las tareas se guardan en `localStorage` en el navegador. No se necesita una base
 
 ---
 
-## ✨ Funcionalidades Principales
+## ✨ Funcionalidades Principales:
 
 * 📝 **Gestión de Tareas (CRUD completo):**
   * **Crear:** Añade rápidamente nuevas tareas a tu lista.

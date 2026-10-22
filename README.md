@@ -11,7 +11,9 @@ Aplicación web moderna e intuitiva para la gestión eficiente de tareas (*Todo 
 
 ## 📸 Vista Previa de la Aplicación
 
-> *Añade aquí las imágenes de tu proyecto guardadas en la carpeta `public/` o subidas a GitHub.*
+Las tareas se guardan en `localStorage` en el navegador. No se necesita una base de datos ni almacenamiento en el servidor para desplegar la aplicación. Los datos son propios de cada navegador y origen: no se sincronizan entre usuarios o dispositivos y no se transfieren automáticamente desde el antiguo archivo `data/todos.json`.
+
+## 🚀 Tecnologías
 
 | Vista Principal (Tareas Activas) | Nueva Funcionalidad: Papelera de Reciclaje |
 | :---: | :---: |
@@ -99,7 +101,28 @@ Visita en tu navegador web la siguiente dirección:
 
 ## 👥 Integrantes del Equipo
 
-Proyecto desarrollado por:
+```text
+BPDS/
+├── app/
+│   ├── actions/
+│   │   ├── create.ts
+│   │   ├── delete.ts
+│   │   ├── read.ts
+│   │   └── update.ts
+│   │
+│   ├── ...
+│
+├── lib/
+│   ├── todos-storage.ts
+│   └── todos.ts
+│
+├── public/
+│
+├── package.json
+├── package-lock.json
+├── tsconfig.json
+└── README.md
+```
 
 * 👤 **Camilo Maduro** - Desarrollador / Liderazgo - [@CamiloMaduro](https://github.com/CamiloMaduro)
 * 👤 Nombre del Integrante 2 - Desarrollador - [@usuario2](https://github.com/usuario2)
@@ -109,24 +132,9 @@ Proyecto desarrollado por:
 
 ## 📁 Estructura del Proyecto
 
-```
-BPDS/
-├── app/                  # Rutas, componentes e interfaces de Next.js
-│   ├── actions/          # Server Actions (create, read, update, delete, trash)
-│   ├── trash/            # Vista y lógica de la nueva papelera
-│   ├── layout.tsx        # Layout global
-│   └── page.tsx          # Página principal
-├── lib/                  # Utilidades y funciones auxiliares (todos.ts)
-├── public/               # Archivos estáticos e imágenes (screenshots)
-├── todos.json            # Base de datos local en JSON
-├── package.json          # Dependencias y scripts
-├── tsconfig.json         # Configuración de TypeScript
-└── README.md             # Documentación del proyecto
-```
+Los cambios se conservan en el mismo navegador mientras se utilice el mismo dominio y no se borren los datos del sitio.
 
----
-
-## 📊 Modelo de Datos
+## 📅 Modelo de datos
 
 Cada elemento `Todo` sigue el siguiente esquema técnico:
 
